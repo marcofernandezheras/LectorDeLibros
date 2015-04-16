@@ -1,11 +1,12 @@
 package lector;
 
-import java.awt.TextArea;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +19,10 @@ public class Libro {
 	List<String> paginas;
 	int currentPage = 0;
 	
-	public Libro(File file, JTextArea area) throws FileNotFoundException {
+	public Libro(File file, JTextArea area) throws FileNotFoundException, UnsupportedEncodingException {
 		paginas = new ArrayList<String>();
-		reader = new BufferedReader(new FileReader(file));
+		//reader = new BufferedReader(new FileReader(file));
+		reader =  new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
 		this.area = area;
 	}
 	

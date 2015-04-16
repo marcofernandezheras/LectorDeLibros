@@ -13,6 +13,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+
 import javax.swing.JLabel;
 
 public class LectorDeLibros extends JFrame {
@@ -42,10 +44,12 @@ public class LectorDeLibros extends JFrame {
 	 * Create the frame.
 	 */
 	public LectorDeLibros() {
+		setTitle("Lector");
+		setResizable(false);
 		
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 302, 484);
+		setBounds(100, 100, 302, 490);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -85,6 +89,11 @@ public class LectorDeLibros extends JFrame {
 			libro = new Libro(new File("juegoTronos.txt"), textArea);
 		}
 		catch (FileNotFoundException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		catch (UnsupportedEncodingException e1)
 		{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
