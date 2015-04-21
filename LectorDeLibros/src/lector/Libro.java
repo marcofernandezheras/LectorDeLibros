@@ -13,59 +13,100 @@ import java.util.List;
 import javax.swing.JTextArea;
 
 public class Libro {
-	
-	JTextArea area;
-	BufferedReader reader;
-	List<String> paginas;
-	int currentPage = 0;
-	
-	public Libro(File file, JTextArea area) throws FileNotFoundException, UnsupportedEncodingException {
-		paginas = new ArrayList<String>();
-		//reader = new BufferedReader(new FileReader(file));
-		reader =  new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+
+	class Pagina {
+
+		public Pagina(int inicio, int fin) {
+			this.inicio = inicio;
+			this.fin = fin;
+		}
+
+		final int inicio;
+		final int fin;
+	}
+
+	private File file;
+	private JTextArea area;
+	private BufferedReader reader;
+	private List<Pagina> paginas;
+	private String ultimaPagina = "", restoPagina = "";
+	int currentPage = 0, lastByte = 0;
+
+	public Libro(File file, JTextArea area) throws FileNotFoundException,
+			UnsupportedEncodingException {
+		this.file = file;
+		paginas = new ArrayList<Pagina>();
+		// reader = new BufferedReader(new FileReader(file));
+		reader = new BufferedReader(
+					new InputStreamReader(
+							new FileInputStream(file), "UTF8"));
 		this.area = area;
 	}
-	
-	public int getCurrentPage(){
+
+	public int getCurrentPage() {
 		return this.currentPage;
 	}
-	
-	public String getPage(int index){
-		if(index <= 0)
-			throw new IllegalArgumentException();
-		
-		if(paginas.size() <= index)
-			leerPagina();	
-		
+
+	public String getPage(int index) {
+		if (index <= 0)
+			// throw new IllegalArgumentException();
+			return ultimaPagina;
+
+		if (paginas.size() <= index - 1)
+			leerPagina();
+		else if (index <= paginas.size())
+		{
+			try
+			{
+				recuperarPagina(index - 1);
+			}
+			catch (Exception e)
+			{
+				return "Internal Error";
+			}
+		}
+
 		currentPage = index;
-		return paginas.get(index - 1);
+		return ultimaPagina;
+	}
+
+	private void recuperarPagina(int index) throws IOException {
+		reader = new BufferedReader(
+					new InputStreamReader(
+							new FileInputStream(file), "UTF8"));
+		reader.skip(paginas.get(index).inicio);
+		char[] buffer = new char[paginas.get(index).fin
+				- paginas.get(index).inicio];
+		reader.read(buffer);
+		ultimaPagina = String.valueOf(buffer);
+		restoPagina = "";
 	}
 
 	private void leerPagina() {
-		
+
 		try
 		{
 			StringBuilder builder = new StringBuilder();
 			do
 			{
-				builder.append(String.valueOf((char)reader.read()));
+				builder.append((char) reader.read());
 				area.setText(builder.toString());
 			}
-			while (area.getPreferredSize().height - area.getFont().getSize() < area.getHeight() );
-			
-			if(paginas.isEmpty()){
-				paginas.add(builder.substring(0, builder.lastIndexOf(" ")));
-			}
-			else{
-				paginas.set(paginas.size()-1, (paginas.get(paginas.size()-1)) + builder.substring(0, builder.lastIndexOf(" ")));
-			}
-			paginas.add(builder.substring(builder.lastIndexOf(" ")));
+			while (area.getPreferredSize().height - area.getFont().getSize() < area
+					.getHeight());
+
+			ultimaPagina = restoPagina
+					+ builder.substring(0, builder.lastIndexOf(" "));
+			restoPagina = builder.substring(builder.lastIndexOf(" "));
+
+			paginas.add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
+			lastByte += ultimaPagina.length();
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
-				
+		}
+
 	}
 }

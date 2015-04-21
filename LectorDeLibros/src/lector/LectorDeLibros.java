@@ -5,6 +5,8 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
@@ -21,10 +23,21 @@ public class LectorDeLibros extends JFrame {
 
 	private JPanel contentPane;
 	private Libro libro;
+	private int paginaMarcada = 1;
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		try
+		{
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		}
+		catch (Exception e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try
@@ -45,11 +58,10 @@ public class LectorDeLibros extends JFrame {
 	 */
 	public LectorDeLibros() {
 		setTitle("Lector");
-		setResizable(false);
 		
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 302, 490);
+		setBounds(100, 100, 321, 497);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -62,8 +74,8 @@ public class LectorDeLibros extends JFrame {
 		
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.SOUTH);
-		JLabel lblNumeroPagina = new JLabel("0");
 		
+		JLabel lblNumeroPagina = new JLabel("0");
 		JButton btnAtras = new JButton("<<");
 		btnAtras.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -81,8 +93,25 @@ public class LectorDeLibros extends JFrame {
 			}
 		});
 		
-		panel.add(lblNumeroPagina);
+		JButton btnMarcar = new JButton("Marcar");
+		btnMarcar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				paginaMarcada = libro.getCurrentPage();
+			}
+		});
+		panel.add(btnMarcar);
+		
+		JButton btnIrAMarca = new JButton("Ir a Marca");
+		btnIrAMarca.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textArea.setText(libro.getPage(paginaMarcada));
+				lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
+			}
+		});
+		panel.add(btnIrAMarca);
 		panel.add(btnAlante);
+		
+		panel.add(lblNumeroPagina);
 		
 		try
 		{
