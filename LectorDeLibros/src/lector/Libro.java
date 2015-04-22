@@ -71,6 +71,10 @@ public class Libro {
 	}
 
 	private void recuperarPagina(int index) throws IOException {
+		reader.close();
+		
+		
+		
 		reader = new BufferedReader(
 					new InputStreamReader(
 							new FileInputStream(file), "UTF8"));
