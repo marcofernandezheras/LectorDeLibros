@@ -31,6 +31,7 @@ public class Libro {
 	private List<Pagina> paginas;
 	private String ultimaPagina = "", restoPagina = "";
 	int currentPage = 0, lastByte = 0;
+	private int paginaMaxima = -1;
 
 	public Libro(File file, JTextArea area) throws FileNotFoundException,
 			UnsupportedEncodingException {
@@ -53,7 +54,11 @@ public class Libro {
 			return ultimaPagina;
 
 		if (paginas.size() <= index - 1)
+		{
+			if(index - 2 == paginaMaxima && paginaMaxima != -1) 
+				return ultimaPagina;
 			leerPagina();
+		}
 		else if (index <= paginas.size())
 		{
 			try
@@ -70,10 +75,8 @@ public class Libro {
 		return ultimaPagina;
 	}
 
-	private void recuperarPagina(int index) throws IOException {
-		reader.close();
-		
-		
+	private void recuperarPagina(int index) throws IOException {		
+		reader.close();		
 		
 		reader = new BufferedReader(
 					new InputStreamReader(
@@ -86,22 +89,35 @@ public class Libro {
 		restoPagina = "";
 	}
 
-	private void leerPagina() {
-
+	private void leerPagina() {				
 		try
 		{
 			StringBuilder builder = new StringBuilder();
+			builder.append(restoPagina);
+			int aux;
 			do
 			{
-				builder.append((char) reader.read());
+				aux = reader.read();
+				if(aux != -1)
+					builder.append((char)aux);
+				else{
+					System.out.println("fin");
+					paginaMaxima = currentPage;
+				}
 				area.setText(builder.toString());
 			}
-			while (area.getPreferredSize().height - area.getFont().getSize() < area
-					.getHeight());
+			while (area.getPreferredSize().height < area
+					.getHeight() && aux != -1);
 
-			ultimaPagina = restoPagina
-					+ builder.substring(0, builder.lastIndexOf(" "));
-			restoPagina = builder.substring(builder.lastIndexOf(" "));
+			if(paginaMaxima == currentPage){
+				ultimaPagina = builder.toString();
+				restoPagina = "";
+			}
+			else 
+			{
+				ultimaPagina = builder.substring(0, builder.lastIndexOf(" "));
+				restoPagina = builder.substring(builder.lastIndexOf(" "));
+			}
 
 			paginas.add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
 			lastByte += ultimaPagina.length();
