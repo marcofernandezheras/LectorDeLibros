@@ -3,10 +3,8 @@ package lector;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +14,12 @@ public class Libro {
 
 	class Pagina {
 
+		/**
+		 * Crea una nueva pagina con <code>inicio</code> como byte inicial
+		 * y <code>fin</code> como byte final.
+		 * @param inicio Byte inicial dentro del buffer.
+		 * @param fin Byte final dentro del buffer.
+		 */
 		public Pagina(int inicio, int fin) {
 			this.inicio = inicio;
 			this.fin = fin;
@@ -27,30 +31,52 @@ public class Libro {
 
 	private File file;
 	private JTextArea area;
-	private BufferedReader reader;
+	private BufferedReader reader = null;
 	private List<Pagina> paginas;
 	private String ultimaPagina = "", restoPagina = "";
 	int currentPage = 0, lastByte = 0;
 	private int paginaMaxima = -1;
 
-	public Libro(File file, JTextArea area) throws FileNotFoundException,
-			UnsupportedEncodingException {
+	/**
+	 * Crea un nuevo {@link Libro} que representa el archivo
+	 * <code>file</code> creando paginas del tamaño del <code>area</code>.
+	 * @param file Archivo de texto plano a leer. Debe estar codificado en UTF-8
+	 * @param area {@link JTextArea} donde se mostrará el libro
+	 * @throws IOException Si hay algun problema con el archivo
+	 */
+	public Libro(File file, JTextArea area) throws IOException {
 		this.file = file;
-		paginas = new ArrayList<Pagina>();
-		// reader = new BufferedReader(new FileReader(file));
-		reader = new BufferedReader(
-					new InputStreamReader(
-							new FileInputStream(file), "UTF8"));
 		this.area = area;
+		paginas = new ArrayList<Pagina>();
+		resetBuffer();
 	}
 
+	/**
+	 * Abre un buffer sobre la propiedad {@link #file}.
+	 * Si el buffer estaba abierto, lo cierra primero.
+	 * @throws IOException Si hay algun problema con el archivo
+	 */
+	private void resetBuffer() throws IOException 
+	{
+		if(reader != null)
+			reader.close();	
+		reader = new BufferedReader(
+				new InputStreamReader(
+						new FileInputStream(file), "UTF8"));
+	}
+	
 	public int getCurrentPage() {
 		return this.currentPage;
 	}
 
-	public String getPage(int index) {
+	/**
+	 * Obtiene la pagina correspondiente al <code>index</code>
+	 * @param index Número de la pagina
+	 * @return Texto ajustado al tamaño de {@link #area}
+	 * @throws IOException Si hay algun problema al leer la pagina.
+	 */
+	public String getPage(int index) throws IOException {
 		if (index <= 0)
-			// throw new IllegalArgumentException();
 			return ultimaPagina;
 
 		if (paginas.size() <= index - 1)
@@ -61,72 +87,65 @@ public class Libro {
 		}
 		else if (index <= paginas.size())
 		{
-			try
-			{
-				recuperarPagina(index - 1);
-			}
-			catch (Exception e)
-			{
-				return "Internal Error";
-			}
+			recuperarPagina(index - 1);
 		}
 
 		currentPage = index;
 		return ultimaPagina;
 	}
 
-	private void recuperarPagina(int index) throws IOException {		
-		reader.close();		
-		
-		reader = new BufferedReader(
-					new InputStreamReader(
-							new FileInputStream(file), "UTF8"));
+	/**
+	 * Recupera un pagina basandose en las {@link Pagina} almacenadas.
+	 * @param index Número de la pagina
+	 * @throws IOException Si hay algun problema al leer la pagina.
+	 */
+	private void recuperarPagina(int index) throws IOException 
+	{			
+		resetBuffer();
 		reader.skip(paginas.get(index).inicio);
-		char[] buffer = new char[paginas.get(index).fin
-				- paginas.get(index).inicio];
+		char[] buffer = new char[paginas.get(index).fin	- paginas.get(index).inicio];
 		reader.read(buffer);
 		ultimaPagina = String.valueOf(buffer);
 		restoPagina = "";
 	}
 
-	private void leerPagina() {				
-		try
+
+	/**
+	 * Extrae el texto necesario para rellenar el {@link #area} por completo
+	 * @throws IOException Si hay algun problema al leer {@link #file}
+	 */
+	private void leerPagina() throws IOException {				
+		
+		StringBuilder builder = new StringBuilder();
+	
+		builder.append(restoPagina);
+		int aux;
+
+		do
 		{
-			StringBuilder builder = new StringBuilder();
-			builder.append(restoPagina);
-			int aux;
-			do
+			aux = reader.read();
+			if(aux != -1)
+				builder.append((char)aux);
+			else
 			{
-				aux = reader.read();
-				if(aux != -1)
-					builder.append((char)aux);
-				else{
-					System.out.println("fin");
-					paginaMaxima = currentPage;
-				}
-				area.setText(builder.toString());
+				paginaMaxima = currentPage;
 			}
-			while (area.getPreferredSize().height < area
-					.getHeight() && aux != -1);
-
-			if(paginaMaxima == currentPage){
-				ultimaPagina = builder.toString();
-				restoPagina = "";
-			}
-			else 
-			{
-				ultimaPagina = builder.substring(0, builder.lastIndexOf(" "));
-				restoPagina = builder.substring(builder.lastIndexOf(" "));
-			}
-
-			paginas.add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
-			lastByte += ultimaPagina.length();
+			area.setText(builder.toString());
+										
 		}
-		catch (IOException e)
+		while (area.getPreferredSize().height < area.getHeight() && aux != -1);
+
+		if(paginaMaxima == currentPage){
+			ultimaPagina = builder.toString();
+			restoPagina = "";
+		}
+		else 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ultimaPagina = builder.substring(0, builder.lastIndexOf(" "));
+			restoPagina = builder.substring(builder.lastIndexOf(" "));
 		}
 
+		paginas.add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
+		lastByte += ultimaPagina.length();
 	}
 }
