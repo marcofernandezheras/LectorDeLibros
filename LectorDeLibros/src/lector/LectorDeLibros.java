@@ -4,18 +4,16 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 import javax.swing.JLabel;
 
@@ -24,6 +22,12 @@ public class LectorDeLibros extends JFrame {
 	private JPanel contentPane;
 	private Libro libro;
 	private int paginaMarcada = 1;
+	private JTextArea textArea;
+	private JButton btnAtras;
+	private JButton btnMarcar;
+	private JButton btnIrAMarca;
+	private JButton btnAlante;
+	private JLabel lblNumeroPagina;
 	/**
 	 * Launch the application.
 	 */
@@ -57,75 +61,111 @@ public class LectorDeLibros extends JFrame {
 	 * Create the frame.
 	 */
 	public LectorDeLibros() {
-		setTitle("Lector");
-		
-		
+		setTitle("Lector");		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 321, 500);
+		setBounds(100, 100, 321, 490);
+		setResizable(false);
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		
-		JTextArea textArea = new JTextArea();
+		textArea = new JTextArea();
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
 		contentPane.add(textArea, BorderLayout.CENTER);
 		
+		//Panel de botones
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.SOUTH);
 		
-		JLabel lblNumeroPagina = new JLabel("0");
-		JButton btnAtras = new JButton("<<");
-		btnAtras.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textArea.setText(libro.getPage(libro.getCurrentPage() - 1));
-				lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
-			}
-		});
+		lblNumeroPagina = new JLabel("0");
+		btnAtras = new JButton("<<");		
+		btnAlante = new JButton(">>");		
+		btnMarcar = new JButton("Marcar");		
+		btnIrAMarca = new JButton("Ir a Marca");
+		
 		panel.add(btnAtras);
-		
-		JButton btnAlante = new JButton(">>");
-		btnAlante.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textArea.setText(libro.getPage(libro.getCurrentPage() + 1));
-				lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
-			}
-		});
-		
-		JButton btnMarcar = new JButton("Marcar");
-		btnMarcar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				paginaMarcada = libro.getCurrentPage();
-			}
-		});
 		panel.add(btnMarcar);
-		
-		JButton btnIrAMarca = new JButton("Ir a Marca");
-		btnIrAMarca.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textArea.setText(libro.getPage(paginaMarcada));
-				lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
-			}
-		});
 		panel.add(btnIrAMarca);
-		panel.add(btnAlante);
+		panel.add(btnAlante);		
+		panel.add(lblNumeroPagina);		
 		
-		panel.add(lblNumeroPagina);
+		//Eventos de los botones
+		eventos();
 		
+		//Apertura del libro
+		abrirLibro();
+	}
+
+	/**
+	 * Abre el Libro
+	 */
+	private void abrirLibro() {
 		try
 		{
 			libro = new Libro(new File("juegoTronos.txt"), textArea);
 		}
-		catch (FileNotFoundException e1)
+		catch (IOException e1)
 		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			JOptionPane.showMessageDialog(this, e1.getMessage(), "Error al abrir archivo", JOptionPane.WARNING_MESSAGE);
+		}		
+	}
+
+	/**
+	 * Añade los eventos a los botones
+	 */
+	private void eventos() {		
+		btnAtras.addActionListener(e -> atras());
+		btnAlante.addActionListener(e -> adelante());
+		btnIrAMarca.addActionListener(e -> irAMarca());	
+		btnMarcar.addActionListener(e -> paginaMarcada = libro.getCurrentPage());
+	}
+
+	/**
+	 * Mueve el libro a la pagina marcada.
+	 * Por defecto está marcada la pagina 1.
+	 */
+	private void irAMarca() {
+		try
+		{
+			textArea.setText(libro.getPage(paginaMarcada));
+			lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
 		}
-		catch (UnsupportedEncodingException e1)
+		catch (IOException e1)
 		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			JOptionPane.showMessageDialog(this, e1.getMessage(), "Error al leer", JOptionPane.WARNING_MESSAGE);
+		}
+	}
+
+	/**
+	 * Mueve el libro una página hacia detrás.
+	 */
+	private void atras() {
+		try
+		{
+			textArea.setText(libro.getPage(libro.getCurrentPage() - 1));
+			lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
+		}
+		catch (IOException e1)
+		{
+			JOptionPane.showMessageDialog(this, e1.getMessage(), "Error al leer", JOptionPane.WARNING_MESSAGE);
+		}
+	}
+
+	/**
+	 * Mueve el libro una página hacia delente.
+	 */
+	private void adelante() {
+		try
+		{
+			textArea.setText(libro.getPage(libro.getCurrentPage() + 1));
+			lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
+		}
+		catch (IOException e1)
+		{
+			JOptionPane.showMessageDialog(this, e1.getMessage(), "Error al leer", JOptionPane.WARNING_MESSAGE);
 		}
 	}
 
