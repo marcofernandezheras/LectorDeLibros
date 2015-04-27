@@ -34,7 +34,7 @@ public class Libro {
 	private BufferedReader reader = null;
 	private List<Pagina> paginas;
 	private String ultimaPagina = "", restoPagina = "";
-	int currentPage = 0, lastByte = 0;
+	private int currentPage = 0, lastByte = 0;
 	private int paginaMaxima = -1;
 
 	/**
