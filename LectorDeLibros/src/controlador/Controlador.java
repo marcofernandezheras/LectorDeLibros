@@ -1,33 +1,19 @@
-package lector;
+package controlador;
 
-import java.awt.BorderLayout;
+
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JTextArea;
-import javax.swing.JButton;
-
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
-public class LectorDeLibros extends JFrame {
+public class Controlador extends vista.LectorDeLibros {
 
-	private JPanel contentPane;
 	private Libro libro;
-	private int paginaMarcada = 1;
-	private JTextArea textArea;
-	private JButton btnAtras;
-	private JButton btnMarcar;
-	private JButton btnIrAMarca;
-	private JButton btnAlante;
-	private JLabel lblNumeroPagina;
+
 	/**
 	 * Launch the application.
 	 */
@@ -41,12 +27,11 @@ public class LectorDeLibros extends JFrame {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try
 				{
-					LectorDeLibros frame = new LectorDeLibros();
+					Controlador frame = new Controlador();
 					frame.setVisible(true);
 				}
 				catch (Exception e)
@@ -60,45 +45,29 @@ public class LectorDeLibros extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public LectorDeLibros() {
-		setTitle("Lector");		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 321, 490);
-		setResizable(false);
+	public Controlador() {
+		super();
 		
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
-		
-		textArea = new JTextArea();
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
-		contentPane.add(textArea, BorderLayout.CENTER);
-		
-		//Panel de botones
-		JPanel panel = new JPanel();
-		contentPane.add(panel, BorderLayout.SOUTH);
-		
-		lblNumeroPagina = new JLabel("0");
-		btnAtras = new JButton("<<");		
-		btnAlante = new JButton(">>");		
-		btnMarcar = new JButton("Marcar");		
-		btnIrAMarca = new JButton("Ir a Marca");
-		
-		panel.add(btnAtras);
-		panel.add(btnMarcar);
-		panel.add(btnIrAMarca);
-		panel.add(btnAlante);		
-		panel.add(lblNumeroPagina);		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				libro.serialize();
+			}
+		});
 		
 		//Eventos de los botones
 		eventos();
-		
+
 		//Apertura del libro
 		abrirLibro();
+				
+		if(new File("marcador.dat").exists()){
+			textArea.setText(libro.deserialize());
+			lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
+		}	
 	}
 
+	
 	/**
 	 * Abre el Libro
 	 */
@@ -120,7 +89,7 @@ public class LectorDeLibros extends JFrame {
 		btnAtras.addActionListener(e -> atras());
 		btnAlante.addActionListener(e -> adelante());
 		btnIrAMarca.addActionListener(e -> irAMarca());	
-		btnMarcar.addActionListener(e -> paginaMarcada = libro.getCurrentPage());
+		btnMarcar.addActionListener(e -> libro.setPaginaMarcada(libro.getCurrentPage()));
 	}
 
 	/**
@@ -130,7 +99,7 @@ public class LectorDeLibros extends JFrame {
 	private void irAMarca() {
 		try
 		{
-			textArea.setText(libro.getPage(paginaMarcada));
+			textArea.setText(libro.getPage(libro.getPaginaMarcada()));
 			lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
 		}
 		catch (IOException e1)
@@ -168,5 +137,4 @@ public class LectorDeLibros extends JFrame {
 			JOptionPane.showMessageDialog(this, e1.getMessage(), "Error al leer", JOptionPane.WARNING_MESSAGE);
 		}
 	}
-
 }

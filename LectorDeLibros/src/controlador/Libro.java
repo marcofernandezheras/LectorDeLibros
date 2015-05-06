@@ -1,34 +1,24 @@
-package lector;
+package controlador;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTextArea;
 
-public class Libro {
+import modelo.Marcador;
+import modelo.Pagina;
 
-	class Pagina {
-
-		/**
-		 * Crea una nueva pagina con <code>inicio</code> como byte inicial
-		 * y <code>fin</code> como byte final.
-		 * @param inicio Byte inicial dentro del buffer.
-		 * @param fin Byte final dentro del buffer.
-		 */
-		public Pagina(int inicio, int fin) {
-			this.inicio = inicio;
-			this.fin = fin;
-		}
-
-		final int inicio;
-		final int fin;
-	}
-
+public class Libro{
+	
 	private File file;
 	private JTextArea area;
 	private BufferedReader reader = null;
@@ -36,6 +26,15 @@ public class Libro {
 	private String ultimaPagina = "", restoPagina = "";
 	private int currentPage = 0, lastByte = 0;
 	private int paginaMaxima = -1;
+	private int paginaMarcada = 1;
+
+	public int getPaginaMarcada() {
+		return paginaMarcada;
+	}
+
+	public void setPaginaMarcada(int paginaMarcada) {
+		this.paginaMarcada = paginaMarcada;
+	}
 
 	/**
 	 * Crea un nuevo {@link Libro} que representa el archivo
@@ -102,8 +101,8 @@ public class Libro {
 	private void recuperarPagina(int index) throws IOException 
 	{			
 		resetBuffer();
-		reader.skip(paginas.get(index).inicio);
-		char[] buffer = new char[paginas.get(index).fin	- paginas.get(index).inicio];
+		reader.skip(paginas.get(index).getInicio());
+		char[] buffer = new char[paginas.get(index).getFin() - paginas.get(index).getInicio()];
 		reader.read(buffer);
 		ultimaPagina = String.valueOf(buffer);
 		restoPagina = "";
@@ -147,5 +146,51 @@ public class Libro {
 
 		paginas.add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
 		lastByte += ultimaPagina.length();
+	}
+	
+	public void serialize() {		
+		try(ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream("marcador.dat")))
+		{
+			salida.writeObject(new Marcador(currentPage,paginaMarcada, paginas));
+		}
+		catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}				
+	}
+	
+	public String deserialize(){
+		try (ObjectInputStream entrada =new ObjectInputStream(new FileInputStream("marcador.dat")))
+		{
+			Marcador marcador = (Marcador) entrada.readObject();
+			this.paginas = marcador.getPaginas();
+			this.currentPage = marcador.getPagina();
+			this.recuperarPagina(currentPage-1);
+			this.paginaMarcada = marcador.getMarca();
+			lastByte = paginas.get(currentPage-1).getFin();
+			return ultimaPagina;
+		}
+		catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (ClassNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		return "";
 	}
 }
