@@ -12,10 +12,10 @@ import java.io.ObjectOutputStream;
 
 import javax.swing.JTextArea;
 
-import modelo.Marcador;
+import modelo.Libro;
 import modelo.Pagina;
 
-public class Libro{
+public class Librero{
 	
 	private File file;
 	private JTextArea area;
@@ -25,19 +25,19 @@ public class Libro{
 	private int lastByte = 0;
 	private int paginaMaxima = -1;
 
-	private Marcador marcador;
+	private Libro marcador;
 	
 	/**
-	 * Crea un nuevo {@link Libro} que representa el archivo
+	 * Crea un nuevo {@link Librero} que representa el archivo
 	 * <code>file</code> creando paginas del tamaño del <code>area</code>.
 	 * @param file Archivo de texto plano a leer. Debe estar codificado en UTF-8
 	 * @param area {@link JTextArea} donde se mostrará el libro
 	 * @throws IOException Si hay algun problema con el archivo
 	 */
-	public Libro(File file, JTextArea area) throws IOException {
+	public Librero(File file, JTextArea area) throws IOException {
 		this.file = file;
 		this.area = area;
-		this.marcador = new Marcador();
+		this.marcador = new Libro();
 		resetBuffer();
 	}
 
@@ -135,6 +135,9 @@ public class Libro{
 		lastByte += ultimaPagina.length();
 	}
 	
+	/**
+	 * Guarda el estado actual del libro
+	 */
 	public void serialize() {		
 		try(ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream("marcador.dat")))
 		{
@@ -152,29 +155,38 @@ public class Libro{
 		}				
 	}
 	
+	/**
+	 * Recupera el estado guardado del libro, devolviendo
+	 * el contenido de la pagina actual
+	 * @return Pagina actual.
+	 */
 	public String deserialize(){
-		try (ObjectInputStream entrada =new ObjectInputStream(new FileInputStream("marcador.dat")))
+		File marcadorFile = new File("marcador.dat");
+		if(marcadorFile.exists())
 		{
-			marcador = (Marcador) entrada.readObject();
-			this.recuperarPagina(marcador.getPagina()-1);
-			lastByte = marcador.getPaginas().get(marcador.getPagina()-1).getFin();
-			return ultimaPagina;
+			try (ObjectInputStream entrada =new ObjectInputStream(new FileInputStream(marcadorFile)))
+			{
+				marcador = (Libro) entrada.readObject();
+				this.recuperarPagina(marcador.getPagina()-1);
+				lastByte = marcador.getPaginas().get(marcador.getPagina()-1).getFin();
+				return ultimaPagina;
+			}
+			catch (FileNotFoundException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch (ClassNotFoundException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 		}
-		catch (FileNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (ClassNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
 		return "";
 	}
 	

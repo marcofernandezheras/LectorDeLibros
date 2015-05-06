@@ -6,7 +6,7 @@ import java.util.List;
 
 
 @SuppressWarnings("serial")
-public class Marcador implements Serializable{
+public class Libro implements Serializable{
 		private int pagina;
 		private int marca = 1;
 		private List<Pagina> paginas;
@@ -14,18 +14,18 @@ public class Marcador implements Serializable{
 		/**
 		 * Crea un nuevo Marcador vacio
 		 */
-		public Marcador(){
+		public Libro(){
 			this.paginas = new ArrayList<Pagina>();
 		}
 		
 		/**
-		 * Crea un nuevo {@link Marcador} con una lista de paginas, una
+		 * Crea un nuevo {@link Libro} con una lista de paginas, una
 		 * pagina actual y la posicion actual de la marca.
 		 * @param pagina Pagina actual
 		 * @param marca Pagina marcada
 		 * @param paginas Lista de paginas
 		 */
-		public Marcador(int pagina,int marca, List<Pagina> paginas) {
+		public Libro(int pagina,int marca, List<Pagina> paginas) {
 			super();
 			this.pagina = pagina;
 			this.paginas = paginas;

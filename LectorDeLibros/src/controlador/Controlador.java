@@ -13,7 +13,7 @@ import javax.swing.UIManager;
 @SuppressWarnings("serial")
 public class Controlador extends vista.LectorDeLibros {
 
-	private Libro libro;
+	private Librero libro;
 
 	/**
 	 * Launch the application.
@@ -60,12 +60,10 @@ public class Controlador extends vista.LectorDeLibros {
 		eventos();
 
 		//Apertura del libro
-		abrirLibro();
-				
-		if(new File("marcador.dat").exists()){
-			textArea.setText(libro.deserialize());
-			lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
-		}	
+		abrirLibro();				
+		
+		textArea.setText(libro.deserialize());
+		lblNumeroPagina.setText(String.valueOf(libro.getCurrentPage()));
 	}
 
 	
@@ -75,7 +73,7 @@ public class Controlador extends vista.LectorDeLibros {
 	private void abrirLibro() {
 		try
 		{
-			libro = new Libro(new File("juegoTronos.txt"), textArea);
+			libro = new Librero(new File("juegoTronos.txt"), textArea);
 		}
 		catch (IOException e1)
 		{
