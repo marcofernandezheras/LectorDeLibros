@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JTextArea;
 
@@ -22,20 +20,13 @@ public class Libro{
 	private File file;
 	private JTextArea area;
 	private BufferedReader reader = null;
-	private List<Pagina> paginas;
+
 	private String ultimaPagina = "", restoPagina = "";
-	private int currentPage = 0, lastByte = 0;
+	private int lastByte = 0;
 	private int paginaMaxima = -1;
-	private int paginaMarcada = 1;
 
-	public int getPaginaMarcada() {
-		return paginaMarcada;
-	}
-
-	public void setPaginaMarcada(int paginaMarcada) {
-		this.paginaMarcada = paginaMarcada;
-	}
-
+	private Marcador marcador;
+	
 	/**
 	 * Crea un nuevo {@link Libro} que representa el archivo
 	 * <code>file</code> creando paginas del tamaño del <code>area</code>.
@@ -46,7 +37,7 @@ public class Libro{
 	public Libro(File file, JTextArea area) throws IOException {
 		this.file = file;
 		this.area = area;
-		paginas = new ArrayList<Pagina>();
+		this.marcador = new Marcador();
 		resetBuffer();
 	}
 
@@ -64,10 +55,6 @@ public class Libro{
 						new FileInputStream(file), "UTF8"));
 	}
 	
-	public int getCurrentPage() {
-		return this.currentPage;
-	}
-
 	/**
 	 * Obtiene la pagina correspondiente al <code>index</code>
 	 * @param index Número de la pagina
@@ -78,18 +65,18 @@ public class Libro{
 		if (index <= 0)
 			return ultimaPagina;
 
-		if (paginas.size() <= index - 1)
+		if (marcador.getPaginas().size() <= index - 1)
 		{
 			if(index - 2 == paginaMaxima && paginaMaxima != -1) 
 				return ultimaPagina;
 			leerPagina();
 		}
-		else if (index <= paginas.size())
+		else if (index <= marcador.getPaginas().size())
 		{
 			recuperarPagina(index - 1);
 		}
 
-		currentPage = index;
+		marcador.setPagina(index);
 		return ultimaPagina;
 	}
 
@@ -101,8 +88,8 @@ public class Libro{
 	private void recuperarPagina(int index) throws IOException 
 	{			
 		resetBuffer();
-		reader.skip(paginas.get(index).getInicio());
-		char[] buffer = new char[paginas.get(index).getFin() - paginas.get(index).getInicio()];
+		reader.skip(marcador.getPaginas().get(index).getInicio());
+		char[] buffer = new char[marcador.getPaginas().get(index).getFin() - marcador.getPaginas().get(index).getInicio()];
 		reader.read(buffer);
 		ultimaPagina = String.valueOf(buffer);
 		restoPagina = "";
@@ -127,14 +114,14 @@ public class Libro{
 				builder.append((char)aux);
 			else
 			{
-				paginaMaxima = currentPage;
+				paginaMaxima = marcador.getPagina();
 			}
 			area.setText(builder.toString());
 										
 		}
 		while (area.getPreferredSize().height < area.getHeight() && aux != -1);
 
-		if(paginaMaxima == currentPage){
+		if(paginaMaxima == marcador.getPagina()){
 			ultimaPagina = builder.toString();
 			restoPagina = "";
 		}
@@ -144,14 +131,14 @@ public class Libro{
 			restoPagina = builder.substring(builder.lastIndexOf(" "));
 		}
 
-		paginas.add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
+		marcador.getPaginas().add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
 		lastByte += ultimaPagina.length();
 	}
 	
 	public void serialize() {		
 		try(ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream("marcador.dat")))
 		{
-			salida.writeObject(new Marcador(currentPage,paginaMarcada, paginas));
+			salida.writeObject(marcador);
 		}
 		catch (FileNotFoundException e)
 		{
@@ -168,12 +155,9 @@ public class Libro{
 	public String deserialize(){
 		try (ObjectInputStream entrada =new ObjectInputStream(new FileInputStream("marcador.dat")))
 		{
-			Marcador marcador = (Marcador) entrada.readObject();
-			this.paginas = marcador.getPaginas();
-			this.currentPage = marcador.getPagina();
-			this.recuperarPagina(currentPage-1);
-			this.paginaMarcada = marcador.getMarca();
-			lastByte = paginas.get(currentPage-1).getFin();
+			marcador = (Marcador) entrada.readObject();
+			this.recuperarPagina(marcador.getPagina()-1);
+			lastByte = marcador.getPaginas().get(marcador.getPagina()-1).getFin();
 			return ultimaPagina;
 		}
 		catch (FileNotFoundException e)
@@ -192,5 +176,29 @@ public class Libro{
 			e.printStackTrace();
 		} 
 		return "";
+	}
+	
+	/**
+	 * Devuelve el numero de pagina actual.
+	 * @return pagina actual.
+	 */
+	public int getCurrentPage() {
+		return this.marcador.getPagina();
+	}
+
+	/**
+	 * Pone una marca a la que poder volver.
+	 * @param paginaMarcada Numero de pagina a marcar.
+	 */
+	public void setPaginaMarcada(int paginaMarcada) {
+		this.marcador.setMarca(paginaMarcada);
+	}
+	
+	/**
+	 * Devuelve el numero de pagina marcada.
+	 * @return pagina marcada.
+	 */
+	public int getPaginaMarcada() {
+		return marcador.getMarca();
 	}
 }

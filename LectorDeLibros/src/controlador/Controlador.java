@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
+@SuppressWarnings("serial")
 public class Controlador extends vista.LectorDeLibros {
 
 	private Libro libro;

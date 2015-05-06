@@ -1,30 +1,14 @@
 package vista;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
-
-
-
-
-
-import java.io.File;
-import java.io.IOException;
-
 import javax.swing.JLabel;
 
-import controlador.Libro;
-
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
+@SuppressWarnings("serial")
 public class LectorDeLibros extends JFrame {
 
 	private JPanel contentPane;
@@ -39,9 +23,7 @@ public class LectorDeLibros extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public LectorDeLibros() {
-		
-		
+	public LectorDeLibros() {		
 		
 		setTitle("Lector");		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -74,7 +56,4 @@ public class LectorDeLibros extends JFrame {
 		panel.add(btnAlante);		
 		panel.add(lblNumeroPagina);			
 	}
-
-
-
 }

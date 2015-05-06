@@ -1,14 +1,22 @@
 package modelo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 
 @SuppressWarnings("serial")
 public class Marcador implements Serializable{
-		private final int pagina;
-		private final int marca;
-		private final List<Pagina> paginas;
+		private int pagina;
+		private int marca = 1;
+		private List<Pagina> paginas;
+		
+		/**
+		 * Crea un nuevo Marcador vacio
+		 */
+		public Marcador(){
+			this.paginas = new ArrayList<Pagina>();
+		}
 		
 		/**
 		 * Crea un nuevo {@link Marcador} con una lista de paginas, una
@@ -28,11 +36,20 @@ public class Marcador implements Serializable{
 			return pagina;
 		}
 
-		public int getMarca() {
-			return marca;
-		}
 
 		public List<Pagina> getPaginas() {
 			return paginas;
-		}		
+		}	
+		
+		public void setPagina(int pagina) {
+			this.pagina = pagina;
+		}
+
+		public int getMarca() {
+			return marca;
+		}
+		
+		public void setMarca(int marca) {
+			this.marca = marca;
+		}
 }
