@@ -25,7 +25,7 @@ public class Librero{
 	private int lastByte = 0;
 	private int paginaMaxima = -1;
 
-	private Libro marcador;
+	private Libro libro;
 	
 	/**
 	 * Crea un nuevo {@link Librero} que representa el archivo
@@ -37,7 +37,7 @@ public class Librero{
 	public Librero(File file, JTextArea area) throws IOException {
 		this.file = file;
 		this.area = area;
-		this.marcador = new Libro();
+		this.libro = new Libro();
 		resetBuffer();
 	}
 
@@ -65,18 +65,18 @@ public class Librero{
 		if (index <= 0)
 			return ultimaPagina;
 
-		if (marcador.getPaginas().size() <= index - 1)
+		if (libro.getPaginas().size() <= index - 1)
 		{
 			if(index - 2 == paginaMaxima && paginaMaxima != -1) 
 				return ultimaPagina;
 			leerPagina();
 		}
-		else if (index <= marcador.getPaginas().size())
+		else if (index <= libro.getPaginas().size())
 		{
 			recuperarPagina(index - 1);
 		}
 
-		marcador.setPagina(index);
+		libro.setPagina(index);
 		return ultimaPagina;
 	}
 
@@ -88,8 +88,8 @@ public class Librero{
 	private void recuperarPagina(int index) throws IOException 
 	{			
 		resetBuffer();
-		reader.skip(marcador.getPaginas().get(index).getInicio());
-		char[] buffer = new char[marcador.getPaginas().get(index).getFin() - marcador.getPaginas().get(index).getInicio()];
+		reader.skip(libro.getPaginas().get(index).getInicio());
+		char[] buffer = new char[libro.getPaginas().get(index).getFin() - libro.getPaginas().get(index).getInicio()];
 		reader.read(buffer);
 		ultimaPagina = String.valueOf(buffer);
 		restoPagina = "";
@@ -114,14 +114,14 @@ public class Librero{
 				builder.append((char)aux);
 			else
 			{
-				paginaMaxima = marcador.getPagina();
+				paginaMaxima = libro.getPagina();
 			}
 			area.setText(builder.toString());
 										
 		}
 		while (area.getPreferredSize().height < area.getHeight() && aux != -1);
 
-		if(paginaMaxima == marcador.getPagina()){
+		if(paginaMaxima == libro.getPagina()){
 			ultimaPagina = builder.toString();
 			restoPagina = "";
 		}
@@ -131,7 +131,7 @@ public class Librero{
 			restoPagina = builder.substring(builder.lastIndexOf(" "));
 		}
 
-		marcador.getPaginas().add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
+		libro.getPaginas().add(new Pagina(lastByte, lastByte + ultimaPagina.length()));
 		lastByte += ultimaPagina.length();
 	}
 	
@@ -141,7 +141,7 @@ public class Librero{
 	public void serialize() {		
 		try(ObjectOutputStream salida = new ObjectOutputStream(new FileOutputStream("marcador.dat")))
 		{
-			salida.writeObject(marcador);
+			salida.writeObject(libro);
 		}
 		catch (FileNotFoundException e)
 		{
@@ -166,9 +166,9 @@ public class Librero{
 		{
 			try (ObjectInputStream entrada =new ObjectInputStream(new FileInputStream(marcadorFile)))
 			{
-				marcador = (Libro) entrada.readObject();
-				this.recuperarPagina(marcador.getPagina()-1);
-				lastByte = marcador.getPaginas().get(marcador.getPagina()-1).getFin();
+				libro = (Libro) entrada.readObject();
+				this.recuperarPagina(libro.getPagina()-1);
+				lastByte = libro.getPaginas().get(libro.getPagina()-1).getFin();
 				return ultimaPagina;
 			}
 			catch (FileNotFoundException e)
@@ -195,7 +195,7 @@ public class Librero{
 	 * @return pagina actual.
 	 */
 	public int getCurrentPage() {
-		return this.marcador.getPagina();
+		return this.libro.getPagina();
 	}
 
 	/**
@@ -203,7 +203,7 @@ public class Librero{
 	 * @param paginaMarcada Numero de pagina a marcar.
 	 */
 	public void setPaginaMarcada(int paginaMarcada) {
-		this.marcador.setMarca(paginaMarcada);
+		this.libro.setMarca(paginaMarcada);
 	}
 	
 	/**
@@ -211,6 +211,6 @@ public class Librero{
 	 * @return pagina marcada.
 	 */
 	public int getPaginaMarcada() {
-		return marcador.getMarca();
+		return libro.getMarca();
 	}
 }
